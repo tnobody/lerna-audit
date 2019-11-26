@@ -4,8 +4,7 @@
   "description": "",
   "main": "main.js",
   "bin": "main.js",
-  "scripts": {
-  },
+  "scripts": {},
   "keywords": [],
   "author": "",
   "license": "ISC"

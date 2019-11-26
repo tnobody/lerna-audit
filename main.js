@@ -1,10 +1,8 @@
-#!/bin/node
+#!/usr/bin/env node
 
 const {exec} = require('child_process');
 const {promises} = require('fs');
 const {join} = require('path');
-const {inspect} = require('util')
-
 
 async function cmd(command, cwd = process.cwd()) {
     return new Promise((res, rej) => {
