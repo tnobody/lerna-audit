@@ -18,7 +18,7 @@ async function cmd(command, cwd = process.cwd()) {
 }
 
 async function getPackages() {
-    const result = await cmd('lerna ls --json --loglevel=silent');
+    const result = await cmd('lerna ls --all --json --loglevel=silent');
     return JSON.parse(result);
 }
 
