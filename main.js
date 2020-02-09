@@ -22,19 +22,25 @@ async function getPackages() {
     return JSON.parse(result);
 }
 
-async function getPackageJson(path) {
-    return promises.readFile(join(path, 'package.json')).then(buf => buf.toString());
+function getPackageFilePaths(path) {
+    return {
+        backupPath: join(path, 'original-package.json'),
+        originalPath: join(path, 'package.json'),
+    }
 }
 
 (async () => {
     const packages = await getPackages();
     const packageNames = packages.map(p => p.name);
     for (let lernaPackage of packages) {
-        const packageJsonContent = await getPackageJson(lernaPackage.location);
-        const packageJson = JSON.parse(packageJsonContent);
+        const packagePaths = getPackageFilePaths(lernaPackage.location);
+
         console.log(`Running ${lernaPackage.name}`)
 
+        await promises.rename(packagePaths.originalPath, packagePaths.backupPath);
         try {
+            const packageJson = require(packagePaths.backupPath);
+
             function filterDeps (deps) {
                 return Object.entries(deps || {}).filter(([name]) => {
                     return !packageNames.some(n => n === name)
@@ -47,7 +53,7 @@ async function getPackageJson(path) {
                 devDependencies: filterDeps(packageJson.devDependencies)
             });
 
-            await promises.writeFile(join(lernaPackage.location, 'package.json'), JSON.stringify(newPackageJson, null, 2))
+            await promises.writeFile(packagePaths.originalPath, JSON.stringify(newPackageJson, null, 2))
 
             try {
                 console.log(`Run audit in ${lernaPackage.location}`)
@@ -66,7 +72,7 @@ async function getPackageJson(path) {
         } catch(e) {
             console.error(e);
         } finally {
-            await promises.writeFile(join(lernaPackage.location, 'package.json'), packageJsonContent)
+            await promises.rename(packagePaths.backupPath, packagePaths.originalPath);
         }
     }
 })();
