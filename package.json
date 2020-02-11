@@ -1,6 +1,6 @@
 {
   "name": "lerna-audit",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Micro util to run npm audit for lerna packages (with autofix)",
   "contributors": [
     "Tim Keiner <tim.keiner@consol.de>"
