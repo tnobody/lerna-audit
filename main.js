@@ -29,50 +29,73 @@ function getPackageFilePaths(path) {
     }
 }
 
+function packageInJson(packageNames, name){
+    return packageNames.some(n => n === name)
+}
+
+function filterInternalDeps (deps, packageNames) {
+    return packageFilter(deps, (name) => packageInJson(packageNames, name));
+}
+
+function filterDeps (deps, packageNames) {
+    return packageFilter(deps, (name) => !packageInJson(packageNames, name))
+}
+
+function packageFilter(deps, filter){
+    return Object.entries(deps || {}).filter(([name]) => {
+        return filter(name)
+    }).reduce((deps, [name, version]) => ({...deps, [name]: version}), {})
+}
+
 (async () => {
     const packages = await getPackages();
     const packageNames = packages.map(p => p.name);
     for (let lernaPackage of packages) {
         const packagePaths = getPackageFilePaths(lernaPackage.location);
 
-        console.log(`Running ${lernaPackage.name}`)
+        console.log(`Running ${lernaPackage.name}`);
 
+        const packageJson = require(packagePaths.originalPath);
         await promises.rename(packagePaths.originalPath, packagePaths.backupPath);
-        try {
-            const packageJson = require(packagePaths.backupPath);
 
-            function filterDeps (deps) {
-                return Object.entries(deps || {}).filter(([name]) => {
-                    return !packageNames.some(n => n === name)
-                }).reduce((deps, [name, version]) => ({...deps, [name]: version}), {})
-            }
+        const internalDependencies = filterInternalDeps(packageJson.dependencies, packageNames);
+        const internalDevDependencies = filterInternalDeps(packageJson.devDependencies, packageNames);
+        try {
 
             const newPackageJson = ({
                 ...packageJson,
-                dependencies: filterDeps(packageJson.dependencies),
-                devDependencies: filterDeps(packageJson.devDependencies)
+                dependencies: filterDeps(packageJson.dependencies, packageNames),
+                devDependencies: filterDeps(packageJson.devDependencies, packageNames)
             });
 
-            await promises.writeFile(packagePaths.originalPath, JSON.stringify(newPackageJson, null, 2))
+            await promises.writeFile(packagePaths.originalPath, JSON.stringify(newPackageJson, null, 2));
 
             try {
-                console.log(`Run audit in ${lernaPackage.location}`)
+                console.log(`Run audit in ${lernaPackage.location}`);
                 const audit = await cmd('npm audit', lernaPackage.location);
                 console.log('Audit result');
                 console.log(audit);
             } catch (e) {
                 console.log('Audit errors');
-                console.error(e)
+                console.error(e);
                 console.log('We will fix this for you');
                 const auditFix = await cmd('npm audit fix', lernaPackage.location);
                 console.log(auditFix);
             }
 
-
         } catch(e) {
             console.error(e);
-        } finally {
             await promises.rename(packagePaths.backupPath, packagePaths.originalPath);
+        } finally {
+            const auditedPackageJson = require(packagePaths.originalPath);
+            const restoredPackageJson = ({
+                ...auditedPackageJson,
+                dependencies: {...auditedPackageJson.dependencies, ...internalDependencies},
+                devDependencies: {...auditedPackageJson.devDependencies, ...internalDevDependencies},
+            });
+
+            await promises.writeFile(packagePaths.originalPath, JSON.stringify(restoredPackageJson, null, 2));
+            await promises.unlink(packagePaths.backupPath);
         }
     }
 })();
