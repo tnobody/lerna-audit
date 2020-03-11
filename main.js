@@ -4,6 +4,11 @@ const {exec} = require('child_process');
 const {promises} = require('fs');
 const {join} = require('path');
 
+process.on('unhandledRejection', (error) => {
+    console.error(error);
+    process.exit(1);
+});
+
 async function cmd(command, cwd = process.cwd()) {
     return new Promise((res, rej) => {
         exec(command, {cwd}, (err, stdout, stderr) => {
