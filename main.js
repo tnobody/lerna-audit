@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const {restorePackageJson} =  require("./restore-package-json.function");
 const {exec} = require('child_process');
 const {promises} = require('fs');
 const {join} = require('path');
@@ -50,15 +51,6 @@ function packageFilter(originalDepenencies, filter){
     return Object.entries(originalDepenencies || {}).filter(([name]) => {
         return filter(name)
     }).reduce((filteredDependencies, [name, version]) => ({...filteredDependencies, [name]: version}), {})
-}
-
-function restorePackageJson (packagePaths, internalLernaDependencies) {
-    const auditedPackageJson = require(packagePaths.originalPath);
-    return ({
-        ...auditedPackageJson,
-        dependencies: {...auditedPackageJson.dependencies, ...internalLernaDependencies.dependencies},
-        devDependencies: {...auditedPackageJson.devDependencies, ...internalLernaDependencies.devDependencies},
-    });
 }
 
 async function lernaAudit() {
