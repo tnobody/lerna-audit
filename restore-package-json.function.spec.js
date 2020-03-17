@@ -1,4 +1,4 @@
-const {restorePackageJson} =  require("./restore-package-json.function");
+const {restorePackageJson} = require("./restore-package-json.function");
 
 describe("restorePackageJson", () => {
     it("should not add empty dependencies to package.json", () => {

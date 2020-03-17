@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const {restorePackageJson} =  require("./restore-package-json.function");
+const {restorePackageJson} = require("./restore-package-json.function");
 const {exec} = require('child_process');
 const {promises} = require('fs');
 const {join} = require('path');

@@ -1,4 +1,4 @@
-export default function restorePackageJson (packagePaths, internalLernaDependencies) {
+function restorePackageJson (packagePaths, internalLernaDependencies) {
     const auditedPackageJson = require(packagePaths.originalPath);
     return ({
         ...auditedPackageJson,
@@ -6,3 +6,7 @@ export default function restorePackageJson (packagePaths, internalLernaDependenc
         devDependencies: {...auditedPackageJson.devDependencies, ...internalLernaDependencies.devDependencies},
     });
 }
+
+module.exports = {
+    restorePackageJson
+};
