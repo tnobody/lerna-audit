@@ -1,15 +1,14 @@
 const {restorePackageJson} = require("./restore-package-json.function");
 
 describe("restorePackageJson", () => {
-    it("should not add empty dependencies to package.json", () => {
+    it("should not add empty devDependencies to package.json", () => {
 
         //GIVEN
         const packagePaths = {
             originalPath: "foo/package.json"
         };
         jest.mock("foo/package.json", () => ({
-            dependencies: {},
-            devDependencies: {}
+            dependencies: {}
         }), { virtual: true });
 
         const internalLernaDependencies = {
