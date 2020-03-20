@@ -3,7 +3,7 @@ const {restorePackageJson} = require("./restore-package-json.function");
 describe("restorePackageJson", () => {
 
     beforeEach(() =>{
-        jest.resetAllMocks();
+        jest.resetModules();
     });
 
     it("should not add empty devDependencies to package.json", () => {
