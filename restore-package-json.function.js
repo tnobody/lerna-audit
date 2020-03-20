@@ -1,43 +1,31 @@
-function addDevDependencies (dependenciesToAdd, restoredPackageJson) {
-    if (isEmpty(dependenciesToAdd)) {
-        return restoredPackageJson;
-    }
-
-    return  {
-        ...restoredPackageJson,
-        devDependencies: dependenciesToAdd
-    }
-
-}
-
-function addDependencies (dependenciesToAdd, originalDependencies) {
-    if (isEmpty(dependenciesToAdd)) {
-        return originalDependencies;
-    }
-
-    return {
-        ...originalDependencies,
-        dependencies: dependenciesToAdd
-    }
-}
-
 function restorePackageJson (packagePaths, internalLernaDependencies) {
-    const auditedPackageJson = require(packagePaths.originalPath);
-    let restoredPackageJson = addDependencies({
-            ...auditedPackageJson.dependencies,
-            ...internalLernaDependencies.dependencies
-        },
-        auditedPackageJson
-    );
+    let auditedPackageJson = require(packagePaths.originalPath);
 
-    restoredPackageJson = addDevDependencies({
-            ...auditedPackageJson.devDependencies,
-            ...internalLernaDependencies.devDependencies
-        },
-        restoredPackageJson
-    );
+    const mergedDependencies = {
+        ...auditedPackageJson.dependencies,
+        ...internalLernaDependencies.dependencies
+    };
 
-    return restoredPackageJson;
+    const mergedDevDependencies = {
+        ...auditedPackageJson.devDependencies,
+        ...internalLernaDependencies.devDependencies
+    };
+
+    if(!isEmpty(mergedDependencies)){
+        auditedPackageJson=  {
+            ...auditedPackageJson,
+            dependencies: mergedDependencies
+        }
+    }
+
+    if(!isEmpty(mergedDevDependencies)){
+        auditedPackageJson=  {
+            ...auditedPackageJson,
+            devDependencies: mergedDevDependencies
+        }
+    }
+
+    return auditedPackageJson;
 }
 
 function isEmpty(object){
