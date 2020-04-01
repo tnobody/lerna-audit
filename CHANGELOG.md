@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.2
+
+- Bugfix: Don't add empty dependencies/devDependencies fields in package.json ([#8](https://github.com/tnobody/lerna-audit/pull/8))
+- Bugfix: Use local lerna ([#5](https://github.com/tnobody/lerna-audit/pull/5))
+
 ## 1.1.1
 
 - Bugfix: Fixed version are overridden after package.json is restored ([#4](https://github.com/tnobody/lerna-audit/pull/4))
