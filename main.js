@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const {restorePackageJson} = require("./restore-package-json.function");
 const {exec} = require('child_process');
 const {promises} = require('fs');
 const {join} = require('path');
@@ -22,7 +23,7 @@ async function cmd(command, cwd = process.cwd()) {
     })
 }
 
-async function getPackages() {
+async function getLernaPackages() {
     const result = await cmd('npx lerna ls --all --json --loglevel=silent');
     return JSON.parse(result);
 }
@@ -38,24 +39,24 @@ function packageInJson(packageNames, name){
     return packageNames.some(n => n === name)
 }
 
-function filterInternalDeps (deps, packageNames) {
+function filterInternalLernaDeps (deps, packageNames) {
     return packageFilter(deps, (name) => packageInJson(packageNames, name));
 }
 
-function filterDeps (deps, packageNames) {
+function filterExternalDeps (deps, packageNames) {
     return packageFilter(deps, (name) => !packageInJson(packageNames, name))
 }
 
-function packageFilter(deps, filter){
-    return Object.entries(deps || {}).filter(([name]) => {
+function packageFilter(originalDepenencies, filter){
+    return Object.entries(originalDepenencies || {}).filter(([name]) => {
         return filter(name)
-    }).reduce((deps, [name, version]) => ({...deps, [name]: version}), {})
+    }).reduce((filteredDependencies, [name, version]) => ({...filteredDependencies, [name]: version}), {})
 }
 
-(async () => {
-    const packages = await getPackages();
-    const packageNames = packages.map(p => p.name);
-    for (let lernaPackage of packages) {
+async function lernaAudit() {
+    const lernaPackages = await getLernaPackages();
+    const lernaPackageNames = lernaPackages.map(p => p.name);
+    for (let lernaPackage of lernaPackages) {
         const packagePaths = getPackageFilePaths(lernaPackage.location);
 
         console.log(`Running ${lernaPackage.name}`);
@@ -63,14 +64,16 @@ function packageFilter(deps, filter){
         const packageJson = require(packagePaths.originalPath);
         await promises.rename(packagePaths.originalPath, packagePaths.backupPath);
 
-        const internalDependencies = filterInternalDeps(packageJson.dependencies, packageNames);
-        const internalDevDependencies = filterInternalDeps(packageJson.devDependencies, packageNames);
+        const internalLernaDependencies = {
+            dependencies: filterInternalLernaDeps(packageJson.dependencies, lernaPackageNames),
+            devDependencies: filterInternalLernaDeps(packageJson.devDependencies, lernaPackageNames)
+        };
         try {
 
             const newPackageJson = ({
                 ...packageJson,
-                dependencies: filterDeps(packageJson.dependencies, packageNames),
-                devDependencies: filterDeps(packageJson.devDependencies, packageNames)
+                dependencies: filterExternalDeps(packageJson.dependencies, lernaPackageNames),
+                devDependencies: filterExternalDeps(packageJson.devDependencies, lernaPackageNames)
             });
 
             await promises.writeFile(packagePaths.originalPath, JSON.stringify(newPackageJson, null, 2));
@@ -88,19 +91,18 @@ function packageFilter(deps, filter){
                 console.log(auditFix);
             }
 
-        } catch(e) {
+        } catch (e) {
             console.error(e);
             await promises.rename(packagePaths.backupPath, packagePaths.originalPath);
         } finally {
-            const auditedPackageJson = require(packagePaths.originalPath);
-            const restoredPackageJson = ({
-                ...auditedPackageJson,
-                dependencies: {...auditedPackageJson.dependencies, ...internalDependencies},
-                devDependencies: {...auditedPackageJson.devDependencies, ...internalDevDependencies},
-            });
+            const restoredPackageJson = restorePackageJson(packagePaths, internalLernaDependencies);
 
             await promises.writeFile(packagePaths.originalPath, JSON.stringify(restoredPackageJson, null, 2));
             await promises.unlink(packagePaths.backupPath);
         }
     }
+}
+
+(async () => {
+    await lernaAudit();
 })();
