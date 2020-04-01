@@ -1,3 +1,5 @@
+![](https://github.com/tnobody/lerna-audit/workflows/CI/badge.svg)
+
 # Lerna Audit
 
 Micro util to run npm audit for lerna packages (with autofix).
