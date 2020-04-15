@@ -96,15 +96,13 @@ async function lernaAudit() {
                 const auditFix = await cmd('npm audit fix', lernaPackage.location);
                 console.log(auditFix);
             }
-
-        } catch (e) {
-            console.error(e);
-            await restoreOriginalPackageJson(packagePaths);
-        } finally {
             const restoredPackageJson = restorePackageJson(packagePaths, internalLernaDependencies);
 
             await promises.writeFile(packagePaths.originalPath, JSON.stringify(restoredPackageJson, null, 2));
             await promises.unlink(packagePaths.backupPath);
+        } catch (e) {
+            console.error(e);
+            await restoreOriginalPackageJson(packagePaths);
         }
     }
 }
