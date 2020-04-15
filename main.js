@@ -13,8 +13,12 @@ process.on('unhandledRejection', (error) => {
     process.exit(1);
 });
 
-process.on('SIGINT', () => restoreOriginalPackageJson(packagePaths));
-process.on('SIGTERM', () => restoreOriginalPackageJson(packagePaths));
+async function dieGracefully(){
+    await restoreOriginalPackageJson(packagePaths);
+    process.exit(1);
+}
+process.on('SIGINT', async () => await dieGracefully());
+process.on('SIGTERM', async () => await dieGracefully());
 
 async function cmd(command, cwd = process.cwd()) {
     return new Promise((res, rej) => {

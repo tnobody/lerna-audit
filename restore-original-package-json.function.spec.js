@@ -4,10 +4,8 @@ const {restoreOriginalPackageJson} = require("./restore-original-package-json.fu
 
 describe("restore original package json", () => {
 
-    const logMock = jest.fn();
     const warnMock = jest.fn();
     global.console = {
-        log: logMock,
         warn: warnMock
     }
 
@@ -24,7 +22,6 @@ describe("restore original package json", () => {
 
         //THEN
         expect(promises.rename).toHaveBeenCalledWith(packagePaths.backupPath, packagePaths.originalPath);
-        expect(logMock).toBeCalled();
     })
 
     it("should die gracefully in case of an error", async () => {

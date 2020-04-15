@@ -3,7 +3,7 @@ const {promises} = require('fs');
 async function restoreOriginalPackageJson(packagePaths){
     try{
         await promises.rename(packagePaths.backupPath, packagePaths.originalPath);
-        console.log('\nSuccessfully restored the original package.json!');
+        console.log("");//Ensure pretty linebreak in console
     }catch (error) {
         console.warn(`\nAn error occurred when restoring the original package.json: ${error}`);
     }
