@@ -4,13 +4,13 @@ const {restoreOriginalPackageJson} = require("./restore-original-package-json.fu
 
 describe("restore original package json", () => {
 
-    const warnMock = jest.fn();
+    const errorMock = jest.fn();
     global.console = {
-        warn: warnMock
+        error: errorMock
     }
 
     beforeEach(() => {
-        warnMock.mockReset();
+        errorMock.mockReset();
     })
 
     it("should restore original package json", async () => {
@@ -43,7 +43,7 @@ describe("restore original package json", () => {
         await restoreOriginalPackageJson(packagePaths);
 
         //THEN
-        expect(warnMock).toBeCalled();
+        expect(errorMock).toBeCalled();
     })
 
     it("should not throw an error on undefined package paths", async () => {
@@ -53,6 +53,6 @@ describe("restore original package json", () => {
 
         //WHEN + THEN
         await expect(() => restoreOriginalPackageJson(packagePaths)).not.toThrow()
-        expect(warnMock).not.toBeCalled();
+        expect(errorMock).not.toBeCalled();
     })
 });

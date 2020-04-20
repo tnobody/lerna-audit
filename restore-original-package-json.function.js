@@ -6,7 +6,7 @@ async function restoreOriginalPackageJson(packagePaths){
             await promises.rename(packagePaths.backupPath, packagePaths.originalPath);
             console.log("");//Ensure pretty linebreak in console
         }catch (error) {
-            console.warn(`\nAn error occurred when restoring the original package.json: ${error}`);
+            console.error(`\nAn error occurred when restoring the original package.json: ${error}`);
         }
     }
 }
