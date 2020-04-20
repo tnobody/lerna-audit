@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.2.0
+
+- Enhancement: Restore original package json on abort ([#9](https://github.com/tnobody/lerna-audit/pull/9))
+
 ## 1.1.2
 
 - Bugfix: Don't add empty dependencies/devDependencies fields in package.json ([#8](https://github.com/tnobody/lerna-audit/pull/8))
