@@ -1,14 +1,24 @@
 #!/usr/bin/env node
 
 const {restorePackageJson} = require("./restore-package-json.function");
+const {restoreOriginalPackageJson} = require("./restore-original-package-json.function");
 const {exec} = require('child_process');
 const {promises} = require('fs');
 const {join} = require('path');
+
+let packagePaths;
 
 process.on('unhandledRejection', (error) => {
     console.error(error);
     process.exit(1);
 });
+
+async function dieGracefully(){
+    await restoreOriginalPackageJson(packagePaths);
+    process.exit(1);
+}
+process.on('SIGINT', async () => await dieGracefully());
+process.on('SIGTERM', async () => await dieGracefully());
 
 async function cmd(command, cwd = process.cwd()) {
     return new Promise((res, rej) => {
@@ -57,7 +67,7 @@ async function lernaAudit() {
     const lernaPackages = await getLernaPackages();
     const lernaPackageNames = lernaPackages.map(p => p.name);
     for (let lernaPackage of lernaPackages) {
-        const packagePaths = getPackageFilePaths(lernaPackage.location);
+        packagePaths = getPackageFilePaths(lernaPackage.location);
 
         console.log(`Running ${lernaPackage.name}`);
 
@@ -90,15 +100,13 @@ async function lernaAudit() {
                 const auditFix = await cmd('npm audit fix', lernaPackage.location);
                 console.log(auditFix);
             }
-
-        } catch (e) {
-            console.error(e);
-            await promises.rename(packagePaths.backupPath, packagePaths.originalPath);
-        } finally {
             const restoredPackageJson = restorePackageJson(packagePaths, internalLernaDependencies);
 
             await promises.writeFile(packagePaths.originalPath, JSON.stringify(restoredPackageJson, null, 2));
             await promises.unlink(packagePaths.backupPath);
+        } catch (e) {
+            console.error(e);
+            await restoreOriginalPackageJson(packagePaths);
         }
     }
 }
