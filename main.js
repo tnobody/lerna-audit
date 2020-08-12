@@ -6,6 +6,10 @@ const {exec} = require('child_process');
 const {promises} = require('fs');
 const {join} = require('path');
 
+const {argv} = require('yargs')
+    .boolean("fix")
+    .default("fix", true)
+
 let packagePaths;
 
 process.on('unhandledRejection', (error) => {
@@ -91,14 +95,14 @@ async function lernaAudit() {
             try {
                 console.log(`Run audit in ${lernaPackage.location}`);
                 const audit = await cmd('npm audit', lernaPackage.location);
-                console.log('Audit result');
                 console.log(audit);
             } catch (e) {
-                console.log('Audit errors');
                 console.error(e);
-                console.log('We will fix this for you');
-                const auditFix = await cmd('npm audit fix', lernaPackage.location);
-                console.log(auditFix);
+                if(argv.fix){
+                    console.log('We will fix this for you');
+                    const auditFix = await cmd('npm audit fix', lernaPackage.location);
+                    console.log(auditFix);
+                }
             }
             const restoredPackageJson = restorePackageJson(packagePaths, internalLernaDependencies);
 
