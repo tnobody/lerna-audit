@@ -20,7 +20,7 @@ or
 
 In the root of your lerna monorepo run:
 
-`npx lerna-audit`
+`npx lerna-audit [OPTIONS]`
 
 Or add a script to your `package.json` in root:
 
@@ -31,6 +31,12 @@ Or add a script to your `package.json` in root:
   }
 }
 ```
+
+#### Options
+
+| Parameter | Default | Description                                                 |
+|-----------|---------|-------------------------------------------------------------|
+| `--no-fix`| false   | (optional) Do not fix the found vulnerabilities, just audit | 
 
 ## Why
 
