@@ -8,7 +8,7 @@ const {join} = require('path');
 
 const {argv} = require('yargs')
     .boolean("fix")
-    .default("fix", true)
+    .default("fix", true);
 
 let packagePaths;
 
