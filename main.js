@@ -83,14 +83,11 @@ async function lernaAudit() {
 
             await promises.writeFile(packagePaths.originalPath, JSON.stringify(newPackageJson, null, 2));
 
-            try {
-                console.log(`Run audit in ${lernaPackage.location}`);
-                spawnSync('npm', ['audit'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
-            } catch (e) {
-                if(argv.fix){
-                    console.log('We will fix this for you');
-                    spawnSync('npm', ['audit', 'fix'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
-                }
+            console.log(`Run audit in ${lernaPackage.location}`);
+            const auditResult = spawnSync('npm', ['audit'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
+            if(auditResult.status != 0 && argv.fix){
+                console.log('We will fix this for you');
+                spawnSync('npm', ['audit', 'fix'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
             }
             const restoredPackageJson = restorePackageJson(packagePaths, internalLernaDependencies);
 
