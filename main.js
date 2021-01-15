@@ -2,7 +2,7 @@
 
 const {restorePackageJson} = require("./restore-package-json.function");
 const {restoreOriginalPackageJson} = require("./restore-original-package-json.function");
-const {exec} = require('child_process');
+const {spawnSync} = require('child_process');
 const {promises} = require('fs');
 const {join} = require('path');
 
@@ -24,22 +24,13 @@ async function dieGracefully(){
 process.on('SIGINT', async () => await dieGracefully());
 process.on('SIGTERM', async () => await dieGracefully());
 
-async function cmd(command, cwd = process.cwd()) {
-    return new Promise((res, rej) => {
-        exec(command, {cwd}, (err, stdout, stderr) => {
-            if (err) {
-                rej(stderr || stdout);
-            } else {
-                res(stdout);
-            }
-        });
-
-    })
-}
-
-async function getLernaPackages() {
-    const result = await cmd('npx lerna ls --all --json --loglevel=silent');
-    return JSON.parse(result);
+function getLernaPackages() {
+    const result = spawnSync('npx', ['lerna', 'ls', '--all', '--json', '--loglevel=silent'], { stdio: ['pipe', 'pipe', 'inherit'], shell: true });
+    if (result.status == 0) {
+        return JSON.parse(result.stdout);						
+    }
+    
+    return [];
 }
 
 function getPackageFilePaths(path) {
@@ -68,7 +59,7 @@ function packageFilter(originalDepenencies, filter){
 }
 
 async function lernaAudit() {
-    const lernaPackages = await getLernaPackages();
+    const lernaPackages = getLernaPackages();
     const lernaPackageNames = lernaPackages.map(p => p.name);
     for (let lernaPackage of lernaPackages) {
         packagePaths = getPackageFilePaths(lernaPackage.location);
@@ -94,14 +85,11 @@ async function lernaAudit() {
 
             try {
                 console.log(`Run audit in ${lernaPackage.location}`);
-                const audit = await cmd('npm audit', lernaPackage.location);
-                console.log(audit);
+                spawnSync('npm', ['audit'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
             } catch (e) {
-                console.error(e);
                 if(argv.fix){
                     console.log('We will fix this for you');
-                    const auditFix = await cmd('npm audit fix', lernaPackage.location);
-                    console.log(auditFix);
+                    spawnSync('npm', ['audit', 'fix'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
                 }
             }
             const restoredPackageJson = restorePackageJson(packagePaths, internalLernaDependencies);
