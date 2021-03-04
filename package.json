@@ -18,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@npmcli/arborist": "^2.2.1",
     "yargs": "^15.4.1"
   },
   "devDependencies": {
