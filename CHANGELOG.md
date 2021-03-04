@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.3.1
+
+- Bugfix: package.json - EOF newline removed ([#15](https://github.com/tnobody/lerna-audit/issues/15))
+
 ## 1.3.0
 
 - Enhancement: Added optional parameter `--no-fix` to skip an automatic fix after an audit ([#13](https://github.com/tnobody/lerna-audit/issues/13))
