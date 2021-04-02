@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.3.2
+
+- Fix: Avoid truncated logs by using spawnSync to inherit stdio streams ([#16](https://github.com/tnobody/lerna-audit/pull/16))
+
 ## 1.3.1
 
 - Bugfix: package.json - EOF newline removed ([#15](https://github.com/tnobody/lerna-audit/issues/15))
