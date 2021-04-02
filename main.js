@@ -27,7 +27,7 @@ process.on('SIGTERM', async () => await dieGracefully());
 
 function getLernaPackages() {
     const result = spawnSync('npx', ['lerna', 'ls', '--all', '--json', '--loglevel=silent'], { stdio: ['pipe', 'pipe', 'inherit'], shell: true });
-    if (result.status == 0) {
+    if (result.status === 0) {
         return JSON.parse(result.stdout);						
     }
     
@@ -86,7 +86,7 @@ async function lernaAudit() {
 
             console.log(`Run audit in ${lernaPackage.location}`);
             const auditResult = spawnSync('npm', ['audit'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
-            if(auditResult.status != 0 && argv.fix){
+            if(auditResult.status !== 0 && argv.fix){
                 console.log('We will fix this for you');
                 spawnSync('npm', ['audit', 'fix'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
             }
