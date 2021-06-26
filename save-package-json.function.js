@@ -1,4 +1,4 @@
-const updateRootPackageJson = require("@npmcli/arborist/lib/update-root-package-json");
+const updateRootPackageJson = require("./lib/update-root-package-json");
 
 async function savePackageJSON(path, packageInfo) {
   await updateRootPackageJson({
