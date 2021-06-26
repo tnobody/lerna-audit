@@ -1,7 +1,7 @@
 const {savePackageJSON} = require("./save-package-json.function");
-const updateRootPackageJson = require("@npmcli/arborist/lib/update-root-package-json");
+const updateRootPackageJson = require("./lib/update-root-package-json");
 
-jest.mock("@npmcli/arborist/lib/update-root-package-json");
+jest.mock("./lib/update-root-package-json");
 
 describe("savePackageJSON", () => {
   it("calls the vendor method with path and desired package.json content", async () => {
