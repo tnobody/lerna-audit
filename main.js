@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-const {restorePackageJson} = require("./restore-package-json.function");
-const {restoreOriginalPackageJson} = require("./restore-original-package-json.function");
-const {savePackageJSON} = require("./save-package-json.function");
+const {restorePackageJson} = require("./lib/restore-package-json.function");
+const {restoreOriginalPackageJson} = require("./lib/restore-original-package-json.function");
 const {spawnSync} = require('child_process');
 const {promises} = require('fs');
 const {join} = require('path');
@@ -22,8 +21,8 @@ async function dieGracefully(){
     await restoreOriginalPackageJson(packagePaths);
     process.exit(1);
 }
-process.on('SIGINT', async () => await dieGracefully());
-process.on('SIGTERM', async () => await dieGracefully());
+process.on('SIGINT', async () => dieGracefully());
+process.on('SIGTERM', async () => dieGracefully());
 
 function getLernaPackages() {
     const result = spawnSync('npx', ['lerna', 'ls', '--all', '--json', '--loglevel=silent'], { stdio: ['pipe', 'pipe', 'inherit'], shell: true });
@@ -75,14 +74,13 @@ async function lernaAudit() {
             devDependencies: filterInternalLernaDeps(packageJson.devDependencies, lernaPackageNames)
         };
         try {
-
             const newPackageJson = ({
                 ...packageJson,
                 dependencies: filterExternalDeps(packageJson.dependencies, lernaPackageNames),
                 devDependencies: filterExternalDeps(packageJson.devDependencies, lernaPackageNames)
             });
 
-            await savePackageJSON(lernaPackage.location, newPackageJson);
+            await promises.writeFile(packagePaths.originalPath, JSON.stringify(newPackageJson, null, 2));
 
             console.log(`Run audit in ${lernaPackage.location}`);
             const auditResult = spawnSync('npm', ['audit'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
@@ -92,7 +90,7 @@ async function lernaAudit() {
             }
             const restoredPackageJson = restorePackageJson(packagePaths, internalLernaDependencies);
 
-            await savePackageJSON(lernaPackage.location, restoredPackageJson);
+            await promises.writeFile(packagePaths.originalPath, JSON.stringify(restoredPackageJson, null, 2));
             await promises.unlink(packagePaths.backupPath);
         } catch (e) {
             console.error(e);
