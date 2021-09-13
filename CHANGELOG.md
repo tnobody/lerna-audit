@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.3.3
+
+- Fix: No longer compatible with latest version of @npmcli/arborist ([#25](https://github.com/tnobody/lerna-audit/issues/25))
+
+
 ## 1.3.2
 
 - Fix: Avoid truncated logs by using spawnSync to inherit stdio streams ([#16](https://github.com/tnobody/lerna-audit/pull/16))
