@@ -2,6 +2,8 @@
 
 const {restorePackageJson} = require("./lib/restore-package-json.function");
 const {restoreOriginalPackageJson} = require("./lib/restore-original-package-json.function");
+const {analyzeJson} = require("./lib/analyzeJson");
+const {writeJson} = require("./lib/writeJson");
 const {spawnSync} = require('child_process');
 const {promises} = require('fs');
 const {join} = require('path');
@@ -66,6 +68,8 @@ async function lernaAudit() {
 
         console.log(`Running ${lernaPackage.name}`);
 
+        const jsonOpts = analyzeJson(await promises.readFile(packagePaths.originalPath, "utf8"));
+
         const packageJson = require(packagePaths.originalPath);
         await promises.rename(packagePaths.originalPath, packagePaths.backupPath);
 
@@ -80,7 +84,7 @@ async function lernaAudit() {
                 devDependencies: filterExternalDeps(packageJson.devDependencies, lernaPackageNames)
             });
 
-            await promises.writeFile(packagePaths.originalPath, JSON.stringify(newPackageJson, null, 2));
+            await writeJson(packagePaths.originalPath, newPackageJson, jsonOpts)
 
             console.log(`Run audit in ${lernaPackage.location}`);
             const auditResult = spawnSync('npm', ['audit'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
@@ -90,7 +94,7 @@ async function lernaAudit() {
             }
             const restoredPackageJson = restorePackageJson(packagePaths, internalLernaDependencies);
 
-            await promises.writeFile(packagePaths.originalPath, JSON.stringify(restoredPackageJson, null, 2));
+            await writeJson(packagePaths.originalPath, restoredPackageJson, jsonOpts)
             await promises.unlink(packagePaths.backupPath);
         } catch (e) {
             console.error(e);
