@@ -3,7 +3,8 @@
   "version": "1.3.3",
   "description": "Micro util to run npm audit for lerna packages (with autofix)",
   "contributors": [
-    "Tim Keiner <tim.keiner@consol.de>"
+    "Tim Keiner <tim.keiner@consol.de>",
+    "Sven Hettwer <Sven.Hettwer@web.de"
   ],
   "repository": {
     "type": "git",
